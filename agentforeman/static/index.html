@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentForeman</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='0.5' y='0.5' width='63' height='63' rx='14' fill='%2318181b' stroke='%233f3f46'/%3E%3Cpath d='M17 33 C17 21.5 23.5 14 32 14 C40.5 14 47 21.5 47 33 Z' fill='%23fafafa'/%3E%3Crect x='29.6' y='14.3' width='4.8' height='18.7' fill='%23d4d4d8'/%3E%3Crect x='12' y='32' width='40' height='6' rx='3' fill='%23fafafa'/%3E%3Ccircle cx='20' cy='48.5' r='4.3' fill='%23a1a1aa'/%3E%3Ccircle cx='32' cy='48.5' r='4.3' fill='%2334d399'/%3E%3Ccircle cx='44' cy='48.5' r='4.3' fill='%23a1a1aa'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="logo"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M17 33 C17 21.5 23.5 14 32 14 C40.5 14 47 21.5 47 33 Z" fill="#fafafa"/><rect x="29.6" y="14.3" width="4.8" height="18.7" fill="#d4d4d8"/><rect x="12" y="32" width="40" height="6" rx="3" fill="#fafafa"/><circle cx="20" cy="48.5" r="4.3" fill="#a1a1aa"/><circle cx="32" cy="48.5" r="4.3" fill="#34d399"/><circle cx="44" cy="48.5" r="4.3" fill="#a1a1aa"/></svg>AgentForeman</div>
+    <nav class="nav" id="nav">
+      <a href="#overview" data-route="overview">Overview</a>
+      <a href="#sessions" data-route="sessions">Sessions <span class="pill" id="nav-sessions"></span></a>
+      <a href="#subagents" data-route="subagents">Subagents <span class="pill" id="nav-subagents"></span></a>
+      <a href="#activity" data-route="activity">Activity</a>
+      <a href="#codex" data-route="codex">Codex <span class="pill" id="nav-codex"></span></a>
+      <a href="#rules" data-route="rules">Rules <span class="pill" id="nav-rules"></span></a>
+    </nav>
+    <div class="side-foot">
+      <div class="conn" id="conn" data-tip="Stream from the local server. Refresh every 1.5 s."><span class="led"></span><span id="conn-text">Connecting</span></div>
+      <div class="ro" id="ctl-state" data-tip="Checking the controls.">Controls</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="crumbs"><span class="muted">AgentForeman</span><span class="sep">/</span><span id="page-title">Overview</span></div>
+      <div class="top-tools">
+        <div class="search">
+          <input id="search" type="search" placeholder="Search sessions, files, commands" aria-label="Search">
+          <kbd>/</kbd>
+        </div>
+        <select id="project-filter" aria-label="Project" data-tip="Filter by project folder."></select>
+        <button id="notify" class="btn" type="button" data-tip="Desktop alert when a session needs input.">Alerts off</button>
+        <button id="theme" class="btn" type="button" data-tip="Switch between the light and dark theme.">Switch to dark</button>
+      </div>
+    </header>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Session details" hidden></aside>
+<div id="tip" class="tip" role="tooltip" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="/app.js"></script>
+</body>
+</html>
