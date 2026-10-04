@@ -20,6 +20,8 @@ import threading
 from test_acceptance import ROOT, TEST_TOKEN, home, server  # noqa: F401
 from test_release import cli, free_port, running
 
+from agentforeman.server import LocalServer
+
 
 def ask(port, path, headers=None):
     conn = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
@@ -158,7 +160,7 @@ def test_open_never_sends_the_link_to_another_program_on_the_port(tmp_path):
         pass
     token = (ctl / "token").read_text().strip()
     port = free_port()
-    squatter = http.server.HTTPServer(("127.0.0.1", port), Squatter)
+    squatter = LocalServer(("127.0.0.1", port), Squatter)
     threading.Thread(target=squatter.serve_forever, daemon=True).start()
     try:
         r = cli("open", "--print", "--port", str(port), "--control-dir", str(ctl))

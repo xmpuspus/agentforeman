@@ -11,6 +11,7 @@ import socket
 import stat
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -67,11 +68,12 @@ def running(*args):
         ctl = Path(args[args.index("--control-dir") + 1])
         ctl.mkdir(parents=True, exist_ok=True, mode=0o700)
         TOKENS[port] = load_token(ctl)
+    log = tempfile.NamedTemporaryFile(prefix="agentforeman-", suffix=".log")
     p = subprocess.Popen(
         [sys.executable, "-m", "agentforeman", *args, "--port", str(port)],
         cwd=ROOT,
-        stdout=subprocess.PIPE if demo else subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=subprocess.PIPE if demo else log,
+        stderr=log,
         text=True,
     )
     try:
@@ -84,14 +86,19 @@ def running(*args):
             try:
                 json.loads(get(port, "/api/state"))
                 break
-            except (OSError, ValueError):
+            except (OSError, ValueError) as e:
                 if time.time() > end:
-                    raise AssertionError("the server did not answer in 30 s")
+                    tail = Path(log.name).read_text(errors="replace")[-2000:]
+                    raise AssertionError(
+                        f"the server did not answer in 30 s, last={e!r}\n"
+                        f"server log:\n{tail}"
+                    ) from None
                 time.sleep(0.3)
         yield port
     finally:
         p.terminate()
         p.wait(10)
+        log.close()
 
 
 def token(port):

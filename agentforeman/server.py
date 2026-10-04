@@ -16,6 +16,7 @@ import os
 import re
 import secrets
 import shutil
+import socketserver
 import subprocess
 import sys
 import threading
@@ -540,6 +541,16 @@ class Handler(BaseHTTPRequestHandler):
             return
 
 
+class LocalServer(ThreadingHTTPServer):
+    daemon_threads = True
+
+    def server_bind(self):
+        # HTTPServer also looks up the host name of 127.0.0.1 here, after the bind and before
+        # the listen. Nothing uses that name, and a slow lookup keeps the port shut until it ends.
+        socketserver.TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
+
+
 def serve(
     port=4320,
     claude_dir="~/.claude",
@@ -559,8 +570,7 @@ def serve(
     Handler.port = port
     Handler.token = load_token(control.dir)
     Handler.dry_open = dry_open
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    server.daemon_threads = True
+    server = LocalServer(("127.0.0.1", port), Handler)
     # The link holds the token, and output often goes to a log file that others can read.
     # So the link goes only to the browser.
     print(

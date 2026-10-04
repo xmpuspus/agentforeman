@@ -457,32 +457,43 @@ def snapshot(*dirs):
     return out
 
 
+def wait_for_server(port, log, timeout):
+    """Waits for the first state. On a timeout, the error shows the end of the server log."""
+    try:
+        return wait_for(lambda: state(port), timeout=timeout)
+    except AssertionError as e:
+        tail = log.read_text(errors="replace")[-2000:]
+        raise AssertionError(f"{e}\nserver log:\n{tail}") from None
+
+
 @pytest.fixture
-def server(home):
+def server(home, tmp_path):
     port = free_port()
-    proc = subprocess.Popen(
-        [
-            sys.executable,
-            "-m",
-            "agentforeman",
-            "serve",
-            "--port",
-            str(port),
-            "--claude-dir",
-            str(home["claude"]),
-            "--codex-dir",
-            str(home["codex"]),
-            "--control-dir",
-            str(home["control"]),
-            "--dry-open",
-        ],
-        cwd=ROOT,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
+    log = tmp_path / "server.log"
+    with open(log, "wb") as out:
+        proc = subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "agentforeman",
+                "serve",
+                "--port",
+                str(port),
+                "--claude-dir",
+                str(home["claude"]),
+                "--codex-dir",
+                str(home["codex"]),
+                "--control-dir",
+                str(home["control"]),
+                "--dry-open",
+            ],
+            cwd=ROOT,
+            stdout=out,
+            stderr=subprocess.STDOUT,
+        )
     start = time.time()
     try:
-        wait_for(lambda: state(port), timeout=10)
+        wait_for_server(port, log, timeout=10)
         home["first_state_s"] = time.time() - start
         yield port
     finally:

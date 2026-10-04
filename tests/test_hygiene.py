@@ -226,7 +226,7 @@ def test_open_flag_opens_the_browser_and_the_folder_is_private(tmp_path, monkeyp
         def serve_forever(self):
             raise KeyboardInterrupt
 
-    monkeypatch.setattr(server, "ThreadingHTTPServer", OneShot)
+    monkeypatch.setattr(server, "LocalServer", OneShot)
     monkeypatch.setattr(server.Hub, "run", lambda self: None)
     monkeypatch.setattr(server.webbrowser, "open", opened.append)
     ctl = tmp_path / "ctl"
@@ -238,6 +238,19 @@ def test_open_flag_opens_the_browser_and_the_folder_is_private(tmp_path, monkeyp
     token = (ctl / "token").read_text().strip()
     assert opened == [f"http://127.0.0.1:4999/?token={token}"]
     assert stat.S_IMODE(ctl.stat().st_mode) == 0o700
+
+
+def test_the_server_listens_without_a_host_name_lookup(monkeypatch):
+    # On the GitHub macOS runners, the lookup of 127.0.0.1 took 35 s, and the port stayed shut.
+    def lookup(name=""):
+        raise AssertionError("the server looked up a host name")
+
+    monkeypatch.setattr(socket, "getfqdn", lookup)
+    s = server.LocalServer(("127.0.0.1", 0), server.Handler)
+    try:
+        socket.create_connection(s.server_address, timeout=2).close()
+    finally:
+        s.server_close()
 
 
 DEMO = """
